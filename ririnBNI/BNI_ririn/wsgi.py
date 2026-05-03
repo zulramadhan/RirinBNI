@@ -14,3 +14,6 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BNI_ririn.settings')
 
 application = get_wsgi_application()
+
+# Untuk Vercel
+app = application
