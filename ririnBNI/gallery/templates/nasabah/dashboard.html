@@ -1,0 +1,571 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Nasabah</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/nasabah.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="title">BNI</div>
+            <button class="toggle-btn" id="btn-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <ul class="menu-list">
+            <li class="menu-item active" data-target="dashboard">
+                <span class="icon"><i class="fas fa-chart-line"></i></span>
+                <span class="text">Dashboard</span>
+            </li>
+            <li class="menu-item" data-target="pinjaman">
+                <span class="icon"><i class="fas fa-wallet"></i></span>
+                <span class="text">Pinjaman</span>
+            </li>
+            <li class="menu-item" data-target="profil">
+                <span class="icon"><i class="fas fa-user"></i></span>
+                <span class="text">Profil</span>
+            </li>
+            <li class="menu-item logout">
+                <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                <span class="text">Keluar</span>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="content" id="content">
+        
+        <!-- MENU DASHBOARD -->
+        <div id="dashboard-content" class="page-content active">
+            <header class="content-header">
+                <h1>Halo, <span id="nama-nasabah">Nasabah</span>! 👋</h1>
+                <p>Ringkasan akun Anda hari ini.</p>
+            </header>
+            <div class="summary">
+                <div class="summary-card">
+                    <div class="summary-title">Limit Pinjaman</div>
+                    <div class="summary-value" id="saldo-aktif">Rp 0</div>
+                </div>
+                <div class="summary-card debt">
+                    <div class="summary-title">Pinjaman</div>
+                    <div class="summary-value" id="total-pinjaman-dash">Rp 0</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Statistik Pembayaran Pinjaman</h3>
+                <div class="chart-container">
+                    <canvas id="pinjamanChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <span style="color: var(--orange);">●</span> Angsuran Dibayar 
+                    <span style="color: var(--orange-light); margin-left: 15px;">●</span> Sisa Angsuran
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-receipt"></i> Tagihan Terakhir</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Bulan</th>
+                                <th>Jumlah</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tagihan-terakhir-tbody">
+                            <tr><td colspan="3" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-pie"></i> Ringkasan Pinjaman</h3>
+                <div class="chart-container">
+                    <canvas id="ringkasanChart" style="max-height: 250px;"></canvas>
+                </div>
+                <div class="ringkasan-stats" id="ringkasan-stats">
+                    <div><strong id="total-pinjaman-ringkas">Rp 0</strong><br><small>Total Pinjaman</small></div>
+                    <div><strong id="telah-dibayar-ringkas" style="color: var(--success);">Rp 0</strong><br><small>Telah Dibayar</small></div>
+                    <div><strong id="sisa-pinjaman-ringkas" style="color: var(--danger);">Rp 0</strong><br><small>Sisa Pinjaman</small></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENU PINJAMAN -->
+        <div id="pinjaman-content" class="page-content">
+            <header class="content-header">
+                <h1>Pinjaman Aktif 💰</h1>
+                <p>Kelola dan pantau pinjaman Anda.</p>
+            </header>
+            
+            <!-- Data Pinjaman Saat Ini -->
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Data Pinjaman Saat Ini</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID Pinjaman</th>
+                                <th>ID Nasabah</th>
+                                <th>Jumlah Pinjaman</th>
+                                <th>Bunga</th>
+                                <th>Tenor</th>
+                                <th>Cicilan/Bulan</th>
+                                <th>Sisa Pinjaman</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pinjaman-data-tbody">
+                            <tr><td colspan="10" style="text-align: center;">Memuat data pinjaman...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAMBAHAN JADWAL ANGSUAN -->
+            <div class="card">
+                <h3><i class="fas fa-calendar-alt"></i> Jadwal Angsuran</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Periode</th>
+                                <th>Jumlah Angsuran</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pinjaman-tbody">
+                            <tr><td colspan="5" style="text-align: center;">Memuat jadwal angsuran...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="btn-bayar-pinjaman">Bayar Angsuran</button>
+                <button class="btn-outline" id="btn-riwayat-pinjaman">Riwayat Pembayaran</button>
+            </div>
+        </div>
+
+        <!-- MENU PROFIL -->
+        <div id="profil-content" class="page-content">
+            <header class="content-header">
+                <h1>Profil Saya 👤</h1>
+                <p>Data diri Anda.</p>
+            </header>
+            <div class="card">
+                <h3>Informasi Nasabah</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <tbody id="profil-tbody">
+                            <tr><td colspan="2" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL PEMBAYARAN PINJAMAN -->
+    <div id="modal-payment-pinjaman" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Konfirmasi Pembayaran</h3><span class="modal-close" data-modal="pinjaman">&times;</span></div>
+            <div class="modal-body">
+                <p>Bayar angsuran <strong id="payment-bulan"></strong>?</p>
+                <div class="payment-detail">
+                    <div class="detail-item"><span>Nominal:</span><strong id="payment-nominal"></strong></div>
+                    <div class="detail-item"><span>Metode:</span><select id="payment-method-pinjaman"><option>Virtual Account BNI</option><option>Transfer Antar Bank</option><option>QRIS</option></select></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn-cancel" data-modal="pinjaman">Batal</button><button class="btn-confirm" id="btn-confirm-pinjaman">Bayar</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL RIWAYAT PINJAMAN -->
+    <div id="modal-riwayat-pinjaman" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header"><h3>Riwayat Pembayaran</h3><span class="modal-close-riwayat" data-modal="pinjaman">&times;</span></div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tgl Bayar</th>
+                                <th>Periode</th>
+                                <th>Nominal</th>
+                                <th>Metode</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="riwayat-pinjaman-list">
+                            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn-cancel" data-modal="pinjaman">Tutup</button></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><div class="toast-content"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div></div>
+
+    <script>
+        let selectedPinjaman = null;
+        let pinjamanChart = null;
+        let ringkasanChart = null;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const btnToggle = document.getElementById('btn-toggle');
+            const menuItems = document.querySelectorAll('.sidebar ul li');
+            const logoutBtn = document.querySelector('.sidebar ul li.logout');
+
+            if (btnToggle) btnToggle.onclick = () => sidebar.classList.toggle('collapsed');
+
+            function showPage(pageId) {
+                document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+                const activePage = document.getElementById(pageId + '-content');
+                if (activePage) activePage.classList.add('active');
+            }
+
+            menuItems.forEach(item => {
+                if (!item.classList.contains('logout')) {
+                    item.onclick = function() {
+                        menuItems.forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        showPage(this.getAttribute('data-target'));
+                    };
+                }
+            });
+
+            if (logoutBtn) logoutBtn.onclick = (e) => { e.preventDefault(); window.location.href = "/nasabah/login/"; };
+
+            function showToast(msg) {
+                const toast = document.getElementById('toast');
+                const toastMessage = document.getElementById('toast-message');
+                toastMessage.innerText = msg;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            function formatRupiah(angka) {
+                if (!angka && angka !== 0) return 'Rp 0';
+                return 'Rp ' + parseInt(angka).toLocaleString('id-ID');
+            }
+
+            async function loadAllData() {
+                await Promise.all([loadProfil(), loadPinjaman(), loadAngsuran(), loadRiwayat(), loadTagihanTerakhir()]);
+            }
+            
+            async function loadProfil() {
+                try {
+                    const response = await fetch('/api/nasabah/profil/');
+                    const result = await response.json();
+                    if (result.success) {
+                        const data = result.data;
+                        document.getElementById('nama-nasabah').innerText = data.nama_lengkap.split(' ')[0];
+                        document.getElementById('saldo-aktif').innerText = formatRupiah(data.saldo_aktif);
+                        document.getElementById('profil-tbody').innerHTML = `
+                            <tr><th>NIK</th><td>${data.nik}</td></tr>
+                            <tr><th>Nama Lengkap</th><td>${data.nama_lengkap}</td></tr>
+                            <tr><th>Email</th><td>${data.email}</td></tr>
+                            <tr><th>No. Telepon</th><td>${data.no_telepon}</td></tr>
+                            <tr><th>Saldo Aktif</th><td>${formatRupiah(data.saldo_aktif)}</td></tr>
+                        `;
+                    }
+                } catch (error) { console.error(error); }
+            }
+            
+            async function loadPinjaman() {
+                try {
+                    const response = await fetch('/api/pinjaman/');
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const data = result.data;
+                        document.getElementById('total-pinjaman-dash').innerText = formatRupiah(data.jumlah_pinjaman);
+                        document.getElementById('total-pinjaman-ringkas').innerHTML = formatRupiah(data.jumlah_pinjaman);
+                        document.getElementById('sisa-pinjaman-ringkas').innerHTML = formatRupiah(data.sisa_pinjaman);
+                        const telahDibayar = data.jumlah_pinjaman - data.sisa_pinjaman;
+                        document.getElementById('telah-dibayar-ringkas').innerHTML = formatRupiah(telahDibayar);
+                        
+                        const pinjamanDataTbody = document.getElementById('pinjaman-data-tbody');
+                        if (data.jumlah_pinjaman > 0) {
+                            pinjamanDataTbody.innerHTML = `
+                                <tr>
+                                    <td>${data.id_pinjaman}</td>
+                                    <td>${data.id_nasabah}</td>
+                                    <td>${formatRupiah(data.jumlah_pinjaman)}</td>
+                                    <td>${data.bunga}%</td>
+                                    <td>${data.tenor} Bulan</td>
+                                    <td>${formatRupiah(data.cicilan_perbulan)}</td>
+                                    <td>${formatRupiah(data.sisa_pinjaman)}</td>
+                                    <td>${data.tanggal_mulai}</td>
+                                    <td>${data.tanggal_selesai}</td>
+                                    <td><span class="status-aktif">${data.status}</span></td>
+                                </tr>
+                            `;
+                        } else {
+                            pinjamanDataTbody.innerHTML = '<tr><td colspan="10">Belum ada data pinjaman</td></tr>';
+                        }
+                        return data;
+                    }
+                } catch (error) { console.error(error); }
+                return null;
+            }
+            
+            async function loadAngsuran() {
+                try {
+                    const response = await fetch('/api/pinjaman/');
+                    const result = await response.json();
+                    
+                    if (result.success && result.data && result.data.jumlah_pinjaman > 0) {
+                        const pinjaman = result.data;
+                        const cicilanPerBulan = parseFloat(pinjaman.cicilan_perbulan);
+                        const totalAngsuran = pinjaman.tenor;
+                        const sudahDibayar = Math.floor((pinjaman.jumlah_pinjaman - pinjaman.sisa_pinjaman) / cicilanPerBulan);
+                        
+                        const angsuranList = [];
+                        for (let i = 1; i <= totalAngsuran; i++) {
+                            const status = i <= sudahDibayar ? 'lunas' : 'belum';
+                            angsuranList.push({
+                                id: i, no: i, bulan: `Bulan ke-${i}`,
+                                nominal: cicilanPerBulan,
+                                status: status,
+                                status_display: status === 'lunas' ? 'Lunas' : 'Belum Dibayar'
+                            });
+                        }
+                        
+                        const tbody = document.getElementById('pinjaman-tbody');
+                        if (tbody) {
+                            if (angsuranList.length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="5">Tidak ada data angsuran</td></tr>';
+                            } else {
+                                tbody.innerHTML = angsuranList.map(item => `
+                                    <tr>
+                                        <td>${item.no}</td>
+                                        <td>${item.bulan}</td>
+                                        <td>${formatRupiah(item.nominal)}</td>
+                                        <td><span class="status-${item.status}">${item.status_display}</span></td>
+                                        <td>${item.status === 'lunas' ? 
+                                            '<button class="btn-disabled" disabled style="background:#ccc; padding:5px 12px; border:none; border-radius:5px;">Lunas</button>' : 
+                                            `<button class="btn-bayar-angsuran" data-id="${item.id}" data-bulan="${item.bulan}" data-nominal="${item.nominal}" style="background:#f37021; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">Bayar</button>`}
+                                        </td>
+                                    </tr>
+                                `).join('');
+                            }
+                        }
+                        
+                        const tagihanBelum = angsuranList.filter(a => a.status !== 'lunas').slice(0, 3);
+                        const tagihanTbody = document.getElementById('tagihan-terakhir-tbody');
+                        if (tagihanTbody) {
+                            if (tagihanBelum.length === 0) {
+                                tagihanTbody.innerHTML = '<tr><td colspan="3">✅ Semua tagihan lunas</td></tr>';
+                            } else {
+                                tagihanTbody.innerHTML = tagihanBelum.map(item => `
+                                    <tr>
+                                        <td>${item.bulan}</td>
+                                        <td>${formatRupiah(item.nominal)}</td>
+                                        <td><button class="btn-bayar-tagihan" data-id="${item.id}" data-bulan="${item.bulan}" data-nominal="${item.nominal}" style="background:#f37021; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">Bayar</button></td>
+                                    </tr>
+                                `).join('');
+                            }
+                        }
+                        
+                        document.querySelectorAll('.btn-bayar-angsuran, .btn-bayar-tagihan').forEach(btn => {
+                            btn.onclick = (e) => {
+                                e.preventDefault();
+                                const id = btn.dataset.id;
+                                const bulan = btn.dataset.bulan;
+                                const nominal = btn.dataset.nominal;
+                                selectedPinjaman = { id: parseInt(id), bulan: bulan, nominal: parseFloat(nominal) };
+                                document.getElementById('payment-bulan').innerText = bulan;
+                                document.getElementById('payment-nominal').innerText = formatRupiah(nominal);
+                                document.getElementById('modal-payment-pinjaman').style.display = 'flex';
+                            };
+                        });
+                        
+                        updateCharts(angsuranList);
+                        return angsuranList;
+                    } else {
+                        document.getElementById('tagihan-terakhir-tbody').innerHTML = '<tr><td colspan="3">Belum ada pinjaman aktif</td></tr>';
+                    }
+                } catch (error) { console.error(error); }
+                return [];
+            }
+            
+            async function loadRiwayat() {
+                try {
+                    const response = await fetch('/api/riwayat/');
+                    const result = await response.json();
+                    const riwayatList = document.getElementById('riwayat-pinjaman-list');
+                    if (result.success && result.data && result.data.length > 0) {
+                        riwayatList.innerHTML = result.data.map(item => `
+                            <tr>
+                                <td>${item.tgl_bayar}</td>
+                                <td>${item.periode}</td>
+                                <td>${formatRupiah(item.nominal)}</td>
+                                <td>${item.metode}</td>
+                                <td><span class="status-lunas">${item.status}</span></td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        riwayatList.innerHTML = '<tr><td colspan="5">Belum ada riwayat pembayaran</td></tr>';
+                    }
+                } catch (error) { console.error(error); }
+            }
+            
+            function updateCharts(angsuranData) {
+                const bulanLabels = angsuranData.map(item => `Bulan ${item.no}`);
+                const dibayarData = angsuranData.map(item => item.status === 'lunas' ? item.nominal : 0);
+                const sisaData = angsuranData.map(item => item.status !== 'lunas' ? item.nominal : 0);
+                const totalDibayar = dibayarData.reduce((a, b) => a + b, 0);
+                const totalSisa = sisaData.reduce((a, b) => a + b, 0);
+                
+                const ctxBar = document.getElementById('pinjamanChart');
+                if (ctxBar) {
+                    if (pinjamanChart) pinjamanChart.destroy();
+                    pinjamanChart = new Chart(ctxBar, { 
+                        type: 'bar', 
+                        data: { 
+                            labels: bulanLabels.slice(0, 12), 
+                            datasets: [
+                                { label: 'Angsuran Dibayar', data: dibayarData.slice(0, 12), backgroundColor: '#f37021', borderRadius: 8 },
+                                { label: 'Sisa Angsuran', data: sisaData.slice(0, 12), backgroundColor: '#ff9a5a', borderRadius: 8 }
+                            ] 
+                        }, 
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: true,
+                            scales: { y: { ticks: { callback: v => 'Rp ' + (v/1000000).toFixed(1) + 'jt' } } }
+                        } 
+                    });
+                }
+                
+                const ctxDoughnut = document.getElementById('ringkasanChart');
+                if (ctxDoughnut) {
+                    if (ringkasanChart) ringkasanChart.destroy();
+                    ringkasanChart = new Chart(ctxDoughnut, { 
+                        type: 'doughnut', 
+                        data: { 
+                            labels: ['Telah Dibayar', 'Sisa Pinjaman'], 
+                            datasets: [{ data: [totalDibayar, totalSisa], backgroundColor: ['#28a745', '#f37021'] }] 
+                        }, 
+                        options: { cutout: '60%', responsive: true, maintainAspectRatio: true } 
+                    });
+                }
+            }
+            
+            document.getElementById('btn-confirm-pinjaman').onclick = async () => {
+                if(!selectedPinjaman) return;
+                const method = document.getElementById('payment-method-pinjaman').value;
+                const confirmBtn = document.getElementById('btn-confirm-pinjaman');
+                try {
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerText = 'Memproses...';
+                    const response = await fetch('/api/bayar/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ angsuran_id: selectedPinjaman.id, metode: method })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast(result.message);
+                        document.getElementById('modal-payment-pinjaman').style.display = 'none';
+                        await loadAllData();
+                        selectedPinjaman = null;
+                    } else {
+                        showToast(result.error || 'Gagal memproses pembayaran');
+                    }
+                } catch (error) {
+                    showToast('Gagal memproses pembayaran');
+                } finally {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerText = 'Bayar';
+                }
+            };
+            
+            // ========== PERBAIKAN TOMBOL BAYAR ANGSUAN ==========
+            document.getElementById('btn-bayar-pinjaman').onclick = () => { 
+                const first = document.querySelector('#pinjaman-tbody .btn-bayar-angsuran'); 
+                if(first) first.click(); 
+                else showToast('Semua angsuran sudah lunas!'); 
+            };
+            
+            document.getElementById('btn-riwayat-pinjaman').onclick = async () => { 
+                await loadRiwayat();
+                document.getElementById('modal-riwayat-pinjaman').style.display = 'flex'; 
+            };
+            
+            function closeModals() { 
+                ['modal-payment-pinjaman', 'modal-riwayat-pinjaman'].forEach(id => {
+                    const modal = document.getElementById(id);
+                    if (modal) modal.style.display = 'none';
+                });
+            }
+            
+            document.querySelectorAll('.modal-close, .modal-close-riwayat, .btn-cancel').forEach(btn => {
+                if (btn) btn.onclick = closeModals;
+            });
+            
+            window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; };
+            
+            loadAllData();
+        });
+
+        async function loadTagihanTerakhir() {
+            try {
+                const response = await fetch('/api/nasabah/profil/');
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const data = result.data;
+                    const tagihanBulan = data.tagihan_bulan || 'Bulan ke-1, Bulan ke-2, Bulan ke-3';
+                    const tagihanJumlah = data.tagihan_jumlah || 2330000;
+                    const tagihanStatus = data.tagihan_status || 'Belum Dibayar, Belum Dibayar, Belum Dibayar';
+                    const bulanList = tagihanBulan.split(', ');
+                    const statusList = tagihanStatus.split(', ');
+                    const tagihanList = [];
+                    for (let i = 0; i < bulanList.length; i++) {
+                        tagihanList.push({ bulan: bulanList[i], jumlah: tagihanJumlah, status: statusList[i] || 'Belum Dibayar' });
+                    }
+                    const tagihanTbody = document.getElementById('tagihan-terakhir-tbody');
+                    if (tagihanTbody) {
+                        if (tagihanList.length === 0) {
+                            tagihanTbody.innerHTML = '<tr><td colspan="3">Tidak ada tagihan</td></tr>';
+                        } else {
+                            tagihanTbody.innerHTML = tagihanList.slice(0, 3).map((item, idx) => `
+                                <tr>
+                                    <td>${item.bulan}</td>
+                                    <td>${formatRupiah(item.jumlah)}</td>
+                                    <td>${item.status === 'Lunas' ? '<span class="status-lunas">Lunas</span>' : `<button class="btn-bayar-tagihan" data-id="${idx+1}" data-bulan="${item.bulan}" data-nominal="${item.jumlah}" style="background:#f37021; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;">Bayar</button>`}</td>
+                                </tr>
+                            `).join('');
+                        }
+                    }
+                    document.querySelectorAll('.btn-bayar-tagihan').forEach(btn => {
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            const id = btn.dataset.id;
+                            const bulan = btn.dataset.bulan;
+                            const nominal = btn.dataset.nominal;
+                            selectedPinjaman = { id: id, bulan: bulan, nominal: nominal };
+                            document.getElementById('payment-bulan').innerText = bulan;
+                            document.getElementById('payment-nominal').innerText = formatRupiah(nominal);
+                            document.getElementById('modal-payment-pinjaman').style.display = 'flex';
+                        };
+                    });
+                }
+            } catch (error) { console.error(error); }
+        }
+    </script>
+</body>
+</html>

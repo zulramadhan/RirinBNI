@@ -1,0 +1,1520 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/administrator.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <style>
+    /* ========== MODAL TAMBAH NASABAH STYLE ========== */
+    #modal-nasabah .modal-content {
+        max-width: 900px !important;
+        width: 90% !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+    }
+    #modal-nasabah .modal-header {
+        background: linear-gradient(135deg, #f37021, #e05a00) !important;
+        padding: 18px 24px !important;
+    }
+    #modal-nasabah .modal-header h3 {
+        color: white !important;
+        margin: 0 !important;
+    }
+    #modal-nasabah .modal-header h3 i {
+        margin-right: 10px !important;
+    }
+    #modal-nasabah .modal-close {
+        color: white !important;
+        font-size: 28px !important;
+        cursor: pointer !important;
+    }
+    #modal-nasabah .modal-body {
+        padding: 24px !important;
+        background: #f8fafc !important;
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+    }
+    #modal-nasabah .modal-body h4 {
+        background: white !important;
+        padding: 10px 16px !important;
+        margin: 20px 0 16px 0 !important;
+        border-left: 4px solid #f37021 !important;
+        border-radius: 10px !important;
+        font-size: 0.9rem !important;
+        color: #1e293b !important;
+    }
+    #modal-nasabah .modal-body h4:first-child {
+        margin-top: 0 !important;
+    }
+    #modal-nasabah .modal-body h4 i {
+        color: #f37021 !important;
+        margin-right: 10px !important;
+    }
+    #modal-nasabah .form-row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 16px !important;
+        margin-bottom: 14px !important;
+    }
+    #modal-nasabah .form-group {
+        flex: 1 !important;
+        min-width: calc(50% - 16px) !important;
+    }
+    #modal-nasabah .form-group label {
+        display: block !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        margin-bottom: 6px !important;
+        text-transform: uppercase !important;
+    }
+    #modal-nasabah .form-group label span {
+        color: #f37021 !important;
+    }
+    #modal-nasabah .form-input {
+        width: 100% !important;
+        padding: 10px 14px !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-size: 0.85rem !important;
+        background: white !important;
+    }
+    #modal-nasabah .form-input:focus {
+        border-color: #f37021 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(243, 112, 33, 0.1) !important;
+    }
+    #modal-nasabah textarea.form-input {
+        resize: vertical !important;
+        min-height: 60px !important;
+    }
+    #modal-nasabah select.form-input {
+        cursor: pointer !important;
+    }
+    #modal-nasabah .modal-footer {
+        padding: 16px 24px !important;
+        background: white !important;
+        border-top: 1px solid #e2e8f0 !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
+    }
+    #modal-nasabah .btn-cancel {
+        background: #f1f5f9 !important;
+        border: none !important;
+        padding: 10px 24px !important;
+        border-radius: 40px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+    }
+    #modal-nasabah .btn-cancel:hover {
+        background: #e2e8f0 !important;
+    }
+    #modal-nasabah .btn-confirm {
+        background: linear-gradient(135deg, #f37021, #e05a00) !important;
+        border: none !important;
+        padding: 10px 28px !important;
+        border-radius: 40px !important;
+        font-weight: 600 !important;
+        color: white !important;
+        cursor: pointer !important;
+    }
+    #modal-nasabah .btn-confirm:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(243, 112, 33, 0.3) !important;
+    }
+    @media (max-width: 768px) {
+        #modal-nasabah .form-group {
+            min-width: 100% !important;
+        }
+        #modal-nasabah .modal-body {
+            padding: 16px !important;
+        }
+    }
+    </style>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="title">BNI Admin</div>
+            <button class="toggle-btn" id="btn-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <ul class="menu-list">
+            <li class="menu-item active" data-target="dashboard">
+                <span class="icon"><i class="fas fa-chart-line"></i></span>
+                <span class="text">Dashboard</span>
+            </li>
+            <li class="menu-item" data-target="nasabah">
+                <span class="icon"><i class="fas fa-users"></i></span>
+                <span class="text">Data Nasabah</span>
+            </li>
+            <li class="menu-item" data-target="pinjaman">
+                <span class="icon"><i class="fas fa-wallet"></i></span>
+                <span class="text">Kelola Pinjaman</span>
+            </li>
+            <li class="menu-item logout">
+                <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                <span class="text">Keluar</span>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="content" id="content">
+        
+        <!-- MENU DASHBOARD ADMIN -->
+        <div id="dashboard-content" class="page-content active">
+            <header class="content-header">
+                <h1>Halo, <span id="nama-admin">Administrator</span>! 👋</h1>
+                <p>Ringkasan sistem perbankan hari ini.</p>
+            </header>
+            <div class="summary">
+                <div class="summary-card">
+                    <div class="summary-title">Total Nasabah</div>
+                    <div class="summary-value" id="total-nasabah">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Total Pinjaman Aktif</div>
+                    <div class="summary-value" id="total-pinjaman-aktif">Rp 0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Total Pendapatan</div>
+                    <div class="summary-value" id="total-pendapatan">Rp 0</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Statistik Pinjaman per Bulan</h3>
+                <div class="chart-container">
+                    <canvas id="statistikChart"></canvas>
+                </div>
+            </div>
+            <!-- Tambahan diagram lingkaran - letakkan setelah diagram batang -->
+            <div class="card">
+                <h3><i class="fas fa-chart-pie"></i> Distribusi Tipe Pinjaman</h3>
+                <div class="chart-container" style="display: flex; justify-content: center; align-items: center;">
+                    <canvas id="tipePinjamanChart" style="max-width: 400px; max-height: 400px;"></canvas>
+                </div>
+                <div id="tipe-pinjaman-stats" style="margin-top: 20px; display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                    <!-- Statistik akan ditampilkan di sini -->
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-receipt"></i> Transaksi Terbaru</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Tanggal</th><th>Nasabah</th><th>Jenis</th><th>Jumlah</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="transaksi-terbaru-tbody">
+                            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENU DATA NASABAH -->
+        <div id="nasabah-content" class="page-content">
+            <header class="content-header">
+                <h1>Data Nasabah 👥</h1>
+                <p>Kelola data seluruh nasabah dan ubah menjadi administrator.</p>
+            </header>
+            
+            <div class="button-group">
+                <button class="btn-primary" id="btn-tambah-nasabah">+ Tambah Nasabah</button>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Data Nasabah</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>No</th><th>Nama Debitur</th><th>ID Debitur</th><th>ID Pinjaman</th><th>No. Telepon</th><th>Email</th><th>Alamat</th><th>Tanggal Lahir</th><th>NIK</th><th>Limit Pinjaman</th><th>Password</th><th style="text-align: center;">Aksi</th></tr>
+                        </thead>
+                        <tbody id="nasabah-data-tbody">
+                            <tr><td colspan="11" style="text-align: center;">Memuat data nasabah...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Tanggal Pinjaman</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Tanggal Pinjaman</th><th>Tanggal Pelunasan</th><th>Tipe Pinjaman</th><th>Bunga</th><th>No SKK</th><th>Tanggal SKK</th><th>No PK Perjanjian</th><th>Tanggal PK</th></tr>
+                        </thead>
+                        <tbody id="tanggal-pinjaman-tbody">
+                            <tr><td colspan="8" style="text-align: center;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Jaminan</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Jaminan</th><th>No Agunan</th><th>Tanggal Agunan</th><th>Nama Pemilik Agunan</th></tr>
+                        </thead>
+                        <tbody id="jaminan-tbody">
+                            <tr><td colspan="4" style="text-align: center;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-table"></i> HT</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Jenis Pengikat</th><th>No HT</th><th>Tanggal HT</th><th>No Asuransi</th><th>Asuransi</th></tr>
+                        </thead>
+                        <tbody id="ht-tbody">
+                            <td><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Lokasi Kluise</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Kluise 1</th><th>Kluise 2</th><th>Lemari File</th><th>No File</th><th>Keterangan</th></tr>
+                        </thead>
+                        <tbody id="kluise-tbody">
+                            <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MENU KELOLA PINJAMAN -->
+        <div id="pinjaman-content" class="page-content">
+            <header class="content-header">
+                <h1>Kelola Pinjaman 💰</h1>
+                <p>Pantau dan kelola pinjaman nasabah.</p>
+            </header>
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Data Pinjaman Semua Nasabah</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>ID Pinjaman</th><th>ID Debitur</th><th>Nama Debitur</th><th>Jumlah Pinjaman</th><th>Bunga</th><th>Tenor</th><th>Cicilan/Bulan</th><th>Sisa Pinjaman</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="pinjaman-data-tbody">
+                            <tr><td colspan="9" style="text-align: center;">Memuat data pinjaman...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL TAMBAH NASABAH -->
+    <div id="modal-nasabah" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Tambah Nasabah Lengkap</h3>
+                <span class="modal-close" data-modal="nasabah">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="form-nasabah">
+                    <div class="section-title"><i class="fas fa-user-circle"></i> Data Diri</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>NIK <span class="required">*</span></label><input type="text" id="nik" class="form-input" placeholder="Masukkan NIK" required></div>
+                        <div class="form-group"><label>Nama Debitur <span class="required">*</span></label><input type="text" id="nama_debitur" class="form-input" placeholder="Masukkan Nama Lengkap" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>No. Telepon</label><input type="tel" id="no_telepon" class="form-input" placeholder="081234567890"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="email" class="form-input" placeholder="email@domain.com"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Alamat</label><textarea id="alamat" class="form-input" rows="2" placeholder="Masukkan Alamat Lengkap"></textarea></div>
+                        <div class="form-group"><label>Tanggal Lahir</label><input type="date" id="tanggal_lahir" class="form-input"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Password <span class="required">*</span></label><input type="password" id="password" class="form-input" placeholder="Masukkan Password" required></div>
+                        <div class="form-group"><label>No Urut</label><input type="number" id="no_urut" class="form-input" placeholder="Otomatis" readonly></div>
+                    </div>
+                    <div class="section-title"><i class="fas fa-hand-holding-usd"></i> Data Pinjaman</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Tanggal Pinjaman</label><input type="date" id="tanggal_pinjaman" class="form-input"></div>
+                        <div class="form-group"><label>Tanggal Pelunasan</label><input type="date" id="tanggal_pelunasan" class="form-input"></div>
+                    </div>
+                    <div class="form-row">
+                    <div class="form-group"><label>Limit Pinjaman (Rp)</label><input type="number" id="limit_pinjaman" class="form-input" placeholder="0"></div>
+                    <div class="form-group"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Tipe Pinjaman</label><select id="tipe_pinjaman" class="form-input"><option value="">Pilih Tipe</option><option value="KUR">KUR</option><option value="KPR">KPR</option><option value="KTA">KTA</option></select></div>
+                        <div class="form-group"><label>Bunga (%)</label><input type="number" step="0.1" id="bunga" class="form-input" placeholder="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>No SKK</label><input type="text" id="no_skk" class="form-input" placeholder="No SKK"></div>
+                        <div class="form-group"><label>Tanggal SKK</label><input type="date" id="tanggal_skk" class="form-input"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>No PK Perjanjian</label><input type="text" id="no_pk_perjanjian" class="form-input" placeholder="No PK"></div>
+                        <div class="form-group"><label>Tanggal PK</label><input type="date" id="tanggal_pk" class="form-input"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Jumlah Pinjaman (Rp)</label><input type="number" id="jumlah_pinjaman" class="form-input" placeholder="0"></div>
+                        <div class="form-group"><label>Tenor (Bulan)</label><input type="number" id="tenor" class="form-input" placeholder="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Cicilan/Bulan (Rp)</label><input type="number" id="cicilan_perbulan" class="form-input" placeholder="0"></div>
+                        <div class="form-group"></div>
+                    </div>
+                    <div class="section-title"><i class="fas fa-file-contract"></i> Data Jaminan</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Jaminan</label><input type="text" id="jaminan" class="form-input" placeholder="Jenis Jaminan"></div>
+                        <div class="form-group"><label>No Agunan</label><input type="text" id="no_agunan" class="form-input" placeholder="No Agunan"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Tanggal Agunan</label><input type="date" id="tgl_agunan" class="form-input"></div>
+                        <div class="form-group"><label>Nama Pemilik Agunan</label><input type="text" id="nama_pemilik_agunan" class="form-input" placeholder="Nama Pemilik"></div>
+                    </div>
+                    <div class="section-title"><i class="fas fa-building"></i> Data HT</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Jenis Pengikat</label><input type="text" id="jenis_pengikat" class="form-input" placeholder="Jenis Pengikat"></div>
+                        <div class="form-group"><label>No HT</label><input type="text" id="no_ht" class="form-input" placeholder="No HT"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Tanggal HT</label><input type="date" id="tgl_ht" class="form-input"></div>
+                        <div class="form-group"><label>No Asuransi</label><input type="text" id="no_asuransi" class="form-input" placeholder="No Asuransi"></div>
+                    </div>
+                    <div class="form-row"><div class="form-group"><label>Asuransi</label><input type="text" id="asuransi" class="form-input" placeholder="Nama Asuransi"></div></div>
+                    <div class="section-title"><i class="fas fa-map-marker-alt"></i> Data Lokasi Kluise</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Kluise 1</label><input type="text" id="kluise_1" class="form-input" placeholder="Kluise 1"></div>
+                        <div class="form-group"><label>Kluise 2</label><input type="text" id="kluise_2" class="form-input" placeholder="Kluise 2"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Lemari File</label><input type="text" id="lemari_file" class="form-input" placeholder="Lemari File"></div>
+                        <div class="form-group"><label>No File</label><input type="text" id="no_file" class="form-input" placeholder="No File"></div>
+                    </div>
+                    <div class="form-row"><div class="form-group"><label>Keterangan</label><textarea id="keterangan" class="form-input" rows="2" placeholder="Keterangan"></textarea></div></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" data-modal="nasabah">Batal</button>
+                <button class="btn-confirm" id="btn-simpan-nasabah">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UBAH NASABAH MENJADI ADMINISTRATOR -->
+    <div id="modal-ubah-role" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-shield"></i> Ubah Nasabah menjadi Administrator</h3>
+                <span class="modal-close" data-modal="ubah-role">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin mengubah nasabah <strong id="role-nasabah-nama"></strong> menjadi administrator?</p>
+                <p style="color: var(--orange); margin-top: 10px;"><small>Nasabah akan mendapatkan akses ke dashboard administrator.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" data-modal="ubah-role">Batal</button>
+                <button class="btn-confirm" id="btn-confirm-ubah-role">Ya, Ubah</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script>
+        let statistikChart = null;
+        let selectedNasabahForRole = null;
+        let currentUpdateId = null;
+
+        let semuaDataGlobal = {
+            nasabah: [],
+            pinjaman: [],
+            tanggalPinjaman: [],
+            jaminan: [],
+            ht: [],
+            kluise: []
+        };
+
+        function formatRupiah(angka) {
+            if (!angka && angka !== 0) return 'Rp 0';
+            return 'Rp ' + parseInt(angka).toLocaleString('id-ID');
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function tambahGlobalSearch() {
+            const nasabahContent = document.getElementById('nasabah-content');
+            const header = nasabahContent?.querySelector('.content-header');
+            
+            if (header && !document.getElementById('global-search-container')) {
+                const searchHtml = `
+                    <div id="global-search-container" style="margin: 20px 0 20px 0; background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div style="position: relative;">
+                            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #f37021; font-size: 18px;"></i>
+                            <i class="fas fa-times-circle" id="clear-global-search" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; font-size: 18px; display: none;"></i>
+                            <input type="text" id="global-search-input" class="form-input" placeholder="🔍 Cari SEMUA DATA... (Nama, NIK, ID Pinjaman, No HT, No Agunan, dll)" style="padding-left: 45px; padding-right: 40px; width: 100%; font-size: 14px; border-radius: 40px; border: 2px solid #e2e8f0; height: 48px;">
+                        </div>
+                        <div id="global-search-stats" style="margin-top: 10px; font-size: 12px; color: #64748b; padding-left: 16px;">
+                            <span id="search-result-count">0</span> data ditemukan dari <span id="total-data-count">0</span> total data
+                        </div>
+                    </div>
+                `;
+                header.insertAdjacentHTML('afterend', searchHtml);
+                
+                const searchInput = document.getElementById('global-search-input');
+                const clearBtn = document.getElementById('clear-global-search');
+                
+                searchInput.addEventListener('keyup', function() { globalSearch(this.value); });
+                searchInput.addEventListener('input', function() {
+                    clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+                    if (this.value.length === 0) globalSearch('');
+                });
+                clearBtn.addEventListener('click', function() {
+                    searchInput.value = '';
+                    searchInput.focus();
+                    globalSearch('');
+                    clearBtn.style.display = 'none';
+                });
+            }
+        }
+
+        function globalSearch(keyword) {
+            if (!keyword || keyword.trim() === '') {
+                renderAllTablesWithData(null);
+                document.getElementById('search-result-count').innerText = 'Semua';
+                return;
+            }
+            
+            const lowerKeyword = keyword.toLowerCase().trim();
+            
+            // Filter Nasabah
+            const filteredNasabah = semuaDataGlobal.nasabah.filter(item => {
+                return (item.nama_debitur && item.nama_debitur.toLowerCase().includes(lowerKeyword)) ||
+                       (item.nik && item.nik.toLowerCase().includes(lowerKeyword)) ||
+                       (item.id_debitur && item.id_debitur.toLowerCase().includes(lowerKeyword)) ||
+                       (item.no_telepon && item.no_telepon.toLowerCase().includes(lowerKeyword)) ||
+                       (item.email && item.email.toLowerCase().includes(lowerKeyword)) ||
+                       (item.alamat && item.alamat.toLowerCase().includes(lowerKeyword));
+            });
+            
+            // Filter Pinjaman
+            const filteredPinjaman = semuaDataGlobal.pinjaman.filter(item => {
+                return (item.id_pinjaman && item.id_pinjaman.toLowerCase().includes(lowerKeyword)) ||
+                       (item.id_nasabah && item.id_nasabah.toLowerCase().includes(lowerKeyword)) ||
+                       (item.nama_nasabah && item.nama_nasabah.toLowerCase().includes(lowerKeyword)) ||
+                       (item.status && item.status.toLowerCase().includes(lowerKeyword));
+            });
+            
+            // Dapatkan index nasabah yang match untuk filter tabel terkait
+            const matchIndexes = [];
+            semuaDataGlobal.nasabah.forEach((item, idx) => {
+                if (item.nama_debitur && item.nama_debitur.toLowerCase().includes(lowerKeyword)) {
+                    matchIndexes.push(idx);
+                }
+            });
+            
+            // Filter Tanggal Pinjaman berdasarkan index yang match
+            let filteredTanggalPinjaman = [];
+            if (matchIndexes.length > 0) {
+                matchIndexes.forEach(idx => {
+                    if (semuaDataGlobal.tanggalPinjaman[idx]) {
+                        filteredTanggalPinjaman.push(semuaDataGlobal.tanggalPinjaman[idx]);
+                    }
+                });
+            } else {
+                filteredTanggalPinjaman = semuaDataGlobal.tanggalPinjaman.filter(item => {
+                    return (item.tipe_pinjaman && item.tipe_pinjaman.toLowerCase().includes(lowerKeyword)) ||
+                           (item.no_skk && item.no_skk.toLowerCase().includes(lowerKeyword)) ||
+                           (item.no_pk_perjanjian && item.no_pk_perjanjian.toLowerCase().includes(lowerKeyword));
+                });
+            }
+            
+            // Filter Jaminan
+            let filteredJaminan = [];
+            if (matchIndexes.length > 0) {
+                matchIndexes.forEach(idx => {
+                    if (semuaDataGlobal.jaminan[idx]) {
+                        filteredJaminan.push(semuaDataGlobal.jaminan[idx]);
+                    }
+                });
+            } else {
+                filteredJaminan = semuaDataGlobal.jaminan.filter(item => {
+                    return (item.jaminan && item.jaminan.toLowerCase().includes(lowerKeyword)) ||
+                           (item.no_agunan && item.no_agunan.toLowerCase().includes(lowerKeyword));
+                });
+            }
+            
+            // Filter HT
+            let filteredHt = [];
+            if (matchIndexes.length > 0) {
+                matchIndexes.forEach(idx => {
+                    if (semuaDataGlobal.ht[idx]) {
+                        filteredHt.push(semuaDataGlobal.ht[idx]);
+                    }
+                });
+            } else {
+                filteredHt = semuaDataGlobal.ht.filter(item => {
+                    return (item.jenis_pengikat && item.jenis_pengikat.toLowerCase().includes(lowerKeyword)) ||
+                           (item.no_ht && item.no_ht.toLowerCase().includes(lowerKeyword)) ||
+                           (item.asuransi && item.asuransi.toLowerCase().includes(lowerKeyword));
+                });
+            }
+            
+            // Filter Kluise
+            let filteredKluise = [];
+            if (matchIndexes.length > 0) {
+                matchIndexes.forEach(idx => {
+                    if (semuaDataGlobal.kluise[idx]) {
+                        filteredKluise.push(semuaDataGlobal.kluise[idx]);
+                    }
+                });
+            } else {
+                filteredKluise = semuaDataGlobal.kluise.filter(item => {
+                    return (item.kluise_1 && item.kluise_1.toLowerCase().includes(lowerKeyword)) ||
+                           (item.kluise_2 && item.kluise_2.toLowerCase().includes(lowerKeyword)) ||
+                           (item.lemari_file && item.lemari_file.toLowerCase().includes(lowerKeyword)) ||
+                           (item.no_file && item.no_file.toLowerCase().includes(lowerKeyword));
+                });
+            }
+            
+            const totalFound = filteredNasabah.length + filteredPinjaman.length + filteredTanggalPinjaman.length + 
+                               filteredJaminan.length + filteredHt.length + filteredKluise.length;
+            
+            document.getElementById('search-result-count').innerText = totalFound;
+            
+            renderNasabahToTable(filteredNasabah);
+            renderPinjamanToTable(filteredPinjaman);
+            renderExtraTables({
+                tanggalPinjaman: filteredTanggalPinjaman,
+                jaminan: filteredJaminan,
+                ht: filteredHt,
+                kluise: filteredKluise
+            });
+        }
+        
+        function renderAllTablesWithData(data) {
+            if (!data) {
+                renderNasabahToTable(semuaDataGlobal.nasabah);
+                renderPinjamanToTable(semuaDataGlobal.pinjaman);
+                renderExtraTables({
+                    tanggalPinjaman: semuaDataGlobal.tanggalPinjaman,
+                    jaminan: semuaDataGlobal.jaminan,
+                    ht: semuaDataGlobal.ht,
+                    kluise: semuaDataGlobal.kluise
+                });
+                const totalData = semuaDataGlobal.nasabah.length + semuaDataGlobal.pinjaman.length + 
+                                  semuaDataGlobal.tanggalPinjaman.length + semuaDataGlobal.jaminan.length + 
+                                  semuaDataGlobal.ht.length + semuaDataGlobal.kluise.length;
+                const totalSpan = document.getElementById('total-data-count');
+                if (totalSpan) totalSpan.innerText = totalData;
+            }
+        }
+        
+        function renderNasabahToTable(data) {
+        const tbody = document.getElementById('nasabah-data-tbody');
+        if (!tbody) return;
+        
+        if (!data.length) {
+            tbody.innerHTML = '<td><td colspan="12" style="text-align: center;">❌ Tidak ada data nasabah ditemukan</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = data.map((nasabah, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${nasabah.nama_debitur || '-'}</td>
+                <td>${nasabah.id_debitur || '-'}</td>
+                <td>${nasabah.id_pinjaman || '-'}</td>
+                <td>${nasabah.no_telepon || '-'}</td>
+                <td>${nasabah.email || '-'}</td>
+                <td>${nasabah.alamat || '-'}</td>
+                <td>${nasabah.tanggal_lahir || '-'}</td>
+                <td>${nasabah.nik || '-'}</td>                     <!-- NIK dulu -->
+                <td>${formatRupiah(nasabah.limit_pinjaman || 0)}</td>  <!-- Limit setelah NIK -->
+                <td>${nasabah.password || '-'}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="btn-update" data-id="${nasabah.no_urut}" data-nama="${nasabah.nama_debitur}" 
+                            style="background: #f37021; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; margin-right: 5px;">
+                        <i class="fas fa-edit"></i> Update
+                    </button>
+                    <button class="btn-set-limit" data-id="${nasabah.no_urut}" data-nama="${nasabah.nama_debitur}" data-limit="${nasabah.limit_pinjaman || 0}"
+                            style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; margin-right: 5px;">
+                        <i class="fas fa-chart-line"></i> Set Limit
+                    </button>
+                    <button class="btn-delete" data-id="${nasabah.no_urut}" data-nama="${nasabah.nama_debitur}" 
+                            style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-trash"></i> Hapus
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+        
+        // Event listener untuk tombol-tombol (sama seperti sebelumnya)
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                showDeleteConfirmation(btn.getAttribute('data-id'), btn.getAttribute('data-nama'));
+            };
+        });
+        
+        document.querySelectorAll('.btn-update').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                const nama = btn.getAttribute('data-nama');
+                showUpdateModal(id, nama);
+            };
+        });
+        
+        document.querySelectorAll('.btn-set-limit').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                const nama = btn.getAttribute('data-nama');
+                const limit = btn.getAttribute('data-limit');
+                showSetLimitModal(id, nama, limit);
+            };
+        });
+    }
+        
+        function showUpdateModal(id, nama) {
+            // Cari data nasabah berdasarkan ID
+            const nasabah = semuaDataGlobal.nasabah.find(n => n.no_urut == id);
+            if (!nasabah) {
+                showToast('Data nasabah tidak ditemukan!', 'error');
+                return;
+            }
+            
+            // Isi form modal dengan data nasabah
+            document.getElementById('nik').value = nasabah.nik || '';
+            document.getElementById('nama_debitur').value = nasabah.nama_debitur || '';
+            document.getElementById('no_telepon').value = nasabah.no_telepon || '';
+            document.getElementById('email').value = nasabah.email || '';
+            document.getElementById('alamat').value = nasabah.alamat || '';
+            document.getElementById('tanggal_lahir').value = nasabah.tanggal_lahir || '';
+            document.getElementById('password').value = nasabah.password || '';
+            
+            // Data pinjaman
+            const pinjaman = semuaDataGlobal.pinjaman.find(p => p.id_nasabah == nasabah.id_debitur);
+            if (pinjaman) {
+                document.getElementById('tanggal_pinjaman').value = pinjaman.tanggal_pinjaman || '';
+                document.getElementById('tanggal_pelunasan').value = pinjaman.tanggal_pelunasan || '';
+                document.getElementById('tipe_pinjaman').value = pinjaman.tipe_pinjaman || '';
+                document.getElementById('bunga').value = pinjaman.bunga || '';
+                document.getElementById('jumlah_pinjaman').value = pinjaman.jumlah_pinjaman || '';
+                document.getElementById('tenor').value = pinjaman.tenor || '';
+                document.getElementById('cicilan_perbulan').value = pinjaman.cicilan_perbulan || '';
+            }
+            
+            // Data tanggal pinjaman (extra) - cari berdasarkan index yang sama
+            const nasabahIndex = semuaDataGlobal.nasabah.findIndex(n => n.no_urut == id);
+            if (nasabahIndex !== -1 && semuaDataGlobal.tanggalPinjaman[nasabahIndex]) {
+                const tanggalPinjaman = semuaDataGlobal.tanggalPinjaman[nasabahIndex];
+                document.getElementById('no_skk').value = tanggalPinjaman.no_skk || '';
+                document.getElementById('tanggal_skk').value = tanggalPinjaman.tanggal_skk || '';
+                document.getElementById('no_pk_perjanjian').value = tanggalPinjaman.no_pk_perjanjian || '';
+                document.getElementById('tanggal_pk').value = tanggalPinjaman.tanggal_pk || '';
+            }
+            
+            // Data jaminan
+            if (nasabahIndex !== -1 && semuaDataGlobal.jaminan[nasabahIndex]) {
+                const jaminan = semuaDataGlobal.jaminan[nasabahIndex];
+                document.getElementById('jaminan').value = jaminan.jaminan || '';
+                document.getElementById('no_agunan').value = jaminan.no_agunan || '';
+                document.getElementById('tgl_agunan').value = jaminan.tanggal_agunan || '';
+                document.getElementById('nama_pemilik_agunan').value = jaminan.nama_pemilik_agunan || '';
+            }
+            
+            // Data HT
+            if (nasabahIndex !== -1 && semuaDataGlobal.ht[nasabahIndex]) {
+                const ht = semuaDataGlobal.ht[nasabahIndex];
+                document.getElementById('jenis_pengikat').value = ht.jenis_pengikat || '';
+                document.getElementById('no_ht').value = ht.no_ht || '';
+                document.getElementById('tgl_ht').value = ht.tanggal_ht || '';
+                document.getElementById('no_asuransi').value = ht.no_asuransi || '';
+                document.getElementById('asuransi').value = ht.asuransi || '';
+            }
+            
+            // Data Kluise
+            if (nasabahIndex !== -1 && semuaDataGlobal.kluise[nasabahIndex]) {
+                const kluise = semuaDataGlobal.kluise[nasabahIndex];
+                document.getElementById('kluise_1').value = kluise.kluise_1 || '';
+                document.getElementById('kluise_2').value = kluise.kluise_2 || '';
+                document.getElementById('lemari_file').value = kluise.lemari_file || '';
+                document.getElementById('no_file').value = kluise.no_file || '';
+                document.getElementById('keterangan').value = kluise.keterangan || '';
+            }
+            
+            // Simpan ID nasabah yang sedang diupdate
+            currentUpdateId = id;
+            
+            // Ubah judul modal dan tombol
+            const modalHeader = document.querySelector('#modal-nasabah .modal-header h3');
+            const simpanBtn = document.getElementById('btn-simpan-nasabah');
+            if (modalHeader) modalHeader.innerHTML = '<i class="fas fa-edit"></i> Update Nasabah';
+            if (simpanBtn) simpanBtn.innerText = 'Update';
+            
+            // Tampilkan modal
+            document.getElementById('modal-nasabah').style.display = 'flex';
+        }
+        
+        async function updateNasabah(id, data) {
+    try {
+        // Filter hanya field yang TIDAK kosong (null, undefined, atau string kosong)
+        const filteredData = {};
+        for (const [key, value] of Object.entries(data)) {
+            // Jika value tidak kosong (bukan null, undefined, atau string kosong)
+            if (value !== null && value !== undefined && value !== '') {
+                filteredData[key] = value;
+            }
+        }
+        
+        // Pastikan no_urut tetap dikirim
+        filteredData.no_urut = id;
+        
+        const response = await fetch('/api/administrator/nasabah/update/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filteredData)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast('Nasabah berhasil diupdate!');
+            document.getElementById('modal-nasabah').style.display = 'none';
+            document.getElementById('form-nasabah').reset();
+            
+            // Reset judul modal dan tombol
+            const modalHeader = document.querySelector('#modal-nasabah .modal-header h3');
+            const simpanBtn = document.getElementById('btn-simpan-nasabah');
+            if (modalHeader) modalHeader.innerHTML = '<i class="fas fa-user-plus"></i> Tambah Nasabah Lengkap';
+            if (simpanBtn) simpanBtn.innerText = 'Simpan';
+            currentUpdateId = null;
+            
+            await loadAllData();
+            return true;
+        } else {
+            showToast(result.error || 'Gagal mengupdate nasabah', 'error');
+            return false;
+        }
+    } catch (error) {
+        showToast('Gagal mengupdate nasabah', 'error');
+        return false;
+    }
+}
+        
+        function renderPinjamanToTable(data) {
+            const tbody = document.getElementById('pinjaman-data-tbody');
+            if (!tbody) return;
+            
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">❌ Tidak ada data pinjaman ditemukan</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = data.map(pinjaman => `
+                <tr>
+                    <td>${pinjaman.id_pinjaman || '-'}</td>
+                    <td>${pinjaman.id_nasabah || '-'}</td>
+                    <td>${pinjaman.nama_nasabah || '-'}</td>
+                    <td>${formatRupiah(pinjaman.jumlah_pinjaman)}</td>
+                    <td>${pinjaman.bunga || 0}%</td>
+                    <td>${pinjaman.tenor || 0} Bulan</td>
+                    <td>${formatRupiah(pinjaman.cicilan_perbulan)}</td>
+                    <td>${formatRupiah(pinjaman.sisa_pinjaman)}</td>
+                    <td class="status-${pinjaman.status}">${pinjaman.status || '-'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function renderExtraTables(data) {
+            // Tabel Tanggal Pinjaman
+            const tanggalPinjamanTbody = document.getElementById('tanggal-pinjaman-tbody');
+            if (tanggalPinjamanTbody && data.tanggalPinjaman) {
+                if (data.tanggalPinjaman.length === 0) {
+                    tanggalPinjamanTbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">❌ Tidak ada data tanggal pinjaman ditemukan</td></tr>';
+                } else {
+                    tanggalPinjamanTbody.innerHTML = data.tanggalPinjaman.map(row => `
+                        <tr>
+                            <td>${row.tanggal_pinjaman || '-'}</td>
+                            <td>${row.tanggal_pelunasan || '-'}</td>
+                            <td>${row.tipe_pinjaman || '-'}</td>
+                            <td>${row.bunga || 0}%</td>
+                            <td>${row.no_skk || '-'}</td>
+                            <td>${row.tanggal_skk || '-'}</td>
+                            <td>${row.no_pk_perjanjian || '-'}</td>
+                            <td>${row.tanggal_pk || '-'}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            // Tabel Jaminan
+            const jaminanTbody = document.getElementById('jaminan-tbody');
+            if (jaminanTbody && data.jaminan) {
+                if (data.jaminan.length === 0) {
+                    jaminanTbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">❌ Tidak ada data jaminan ditemukan</td></tr>';
+                } else {
+                    jaminanTbody.innerHTML = data.jaminan.map(row => `
+                        <tr>
+                            <td>${row.jaminan || '-'}</td>
+                            <td>${row.no_agunan || '-'}</td>
+                            <td>${row.tanggal_agunan || '-'}</td>
+                            <td>${row.nama_pemilik_agunan || '-'}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            // Tabel HT
+            const htTbody = document.getElementById('ht-tbody');
+            if (htTbody && data.ht) {
+                if (data.ht.length === 0) {
+                    htTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">❌ Tidak ada data HT ditemukan</td></tr>';
+                } else {
+                    htTbody.innerHTML = data.ht.map(row => `
+                        <tr>
+                            <td>${row.jenis_pengikat || '-'}</td>
+                            <td>${row.no_ht || '-'}</td>
+                            <td>${row.tanggal_ht || '-'}</td>
+                            <td>${row.no_asuransi || '-'}</td>
+                            <td>${row.asuransi || '-'}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            // Tabel Kluise
+            const kluiseTbody = document.getElementById('kluise-tbody');
+            if (kluiseTbody && data.kluise) {
+                if (data.kluise.length === 0) {
+                    kluiseTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">❌ Tidak ada data kluise ditemukan</td></tr>';
+                } else {
+                    kluiseTbody.innerHTML = data.kluise.map(row => `
+                        <tr>
+                            <td>${row.kluise_1 || '-'}</td>
+                            <td>${row.kluise_2 || '-'}</td>
+                            <td>${row.lemari_file || '-'}</td>
+                            <td>${row.no_file || '-'}</td>
+                            <td>${row.keterangan || '-'}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        }
+        
+        async function loadNasabahData() {
+            try {
+                const response = await fetch('/api/administrator/nasabah/');
+                const result = await response.json();
+                if (result.success) {
+                    semuaDataGlobal.nasabah = result.data;
+                    renderNasabahToTable(semuaDataGlobal.nasabah);
+                }
+            } catch (error) {
+                console.error('Error loading nasabah:', error);
+            }
+        }
+        
+        async function loadPinjamanData() {
+            try {
+                const response = await fetch('/api/administrator/pinjaman/');
+                const result = await response.json();
+                if (result.success) {
+                    semuaDataGlobal.pinjaman = result.data;
+                    renderPinjamanToTable(semuaDataGlobal.pinjaman);
+                }
+            } catch (error) {
+                console.error('Error loading pinjaman:', error);
+            }
+        }
+        
+        async function loadAllExtraTables() {
+            try {
+                const response = await fetch('/api/administrator/all-extra-tables/');
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    semuaDataGlobal.tanggalPinjaman = result.data.map(item => ({
+                        tanggal_pinjaman: item.tanggal_pinjaman,
+                        tanggal_pelunasan: item.tanggal_pelunasan,
+                        tipe_pinjaman: item.tipe_pinjaman,
+                        bunga: item.bunga,
+                        no_skk: item.no_skk,
+                        tanggal_skk: item.tanggal_skk,
+                        no_pk_perjanjian: item.no_pk_perjanjian,
+                        tanggal_pk: item.tanggal_pk
+                    }));
+                    
+                    semuaDataGlobal.jaminan = result.data.map(item => ({
+                        jaminan: item.jaminan,
+                        no_agunan: item.no_agunan,
+                        tanggal_agunan: item.tanggal_agunan,
+                        nama_pemilik_agunan: item.nama_pemilik_agunan
+                    }));
+                    
+                    semuaDataGlobal.ht = result.data.map(item => ({
+                        jenis_pengikat: item.jenis_pengikat,
+                        no_ht: item.no_ht,
+                        tanggal_ht: item.tanggal_ht,
+                        no_asuransi: item.no_asuransi,
+                        asuransi: item.asuransi
+                    }));
+                    
+                    semuaDataGlobal.kluise = result.data.map(item => ({
+                        kluise_1: item.kluise_1,
+                        kluise_2: item.kluise_2,
+                        lemari_file: item.lemari_file,
+                        no_file: item.no_file,
+                        keterangan: item.keterangan
+                    }));
+                    
+                    renderExtraTables({
+                        tanggalPinjaman: semuaDataGlobal.tanggalPinjaman,
+                        jaminan: semuaDataGlobal.jaminan,
+                        ht: semuaDataGlobal.ht,
+                        kluise: semuaDataGlobal.kluise
+                    });
+                }
+                
+                const totalData = semuaDataGlobal.nasabah.length + semuaDataGlobal.pinjaman.length + 
+                                  semuaDataGlobal.tanggalPinjaman.length + semuaDataGlobal.jaminan.length + 
+                                  semuaDataGlobal.ht.length + semuaDataGlobal.kluise.length;
+                const totalSpan = document.getElementById('total-data-count');
+                if (totalSpan) totalSpan.innerText = totalData;
+                
+            } catch (error) {
+                console.error('Error loading extra tables:', error);
+            }
+        }
+        
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/administrator/dashboard/');
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('total-nasabah').innerText = result.total_nasabah;
+                    document.getElementById('total-pinjaman-aktif').innerText = formatRupiah(result.total_pinjaman_aktif);
+                    document.getElementById('total-pendapatan').innerText = formatRupiah(result.total_pendapatan);
+                    
+                    const transaksiTbody = document.getElementById('transaksi-terbaru-tbody');
+                    if (result.transaksi_terbaru && result.transaksi_terbaru.length > 0) {
+                        transaksiTbody.innerHTML = result.transaksi_terbaru.map(t => `
+                            <tr>
+                                <td>${t.tanggal}</td>
+                                <td>${t.nasabah}</td>
+                                <td>${t.jenis}</td>
+                                <td>${formatRupiah(t.jumlah)}</td>
+                                <td class="status-lunas">${t.status}</td>
+                            </tr>
+                        `).join('');
+                    }
+                    
+                    if (statistikChart) statistikChart.destroy();
+                    const ctx = document.getElementById('statistikChart');
+                    if (ctx && result.chart_data) {
+                        statistikChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: result.chart_data.bulan,
+                                datasets: [
+                                    { label: 'Jumlah Pinjaman', data: result.chart_data.jumlah_pinjaman, backgroundColor: '#f37021', borderRadius: 8 },
+                                    { label: 'Pendapatan Bunga', data: result.chart_data.pendapatan_bunga, backgroundColor: '#ff9a5a', borderRadius: 8 }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: { y: { ticks: { callback: v => 'Rp ' + (v/1000000).toFixed(1) + 'jt' } } }
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        function showDeleteConfirmation(id, nama) {
+            const confirmModal = document.createElement('div');
+            confirmModal.className = 'modal';
+            confirmModal.style.display = 'flex';
+            confirmModal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header" style="background: #ef4444;">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Konfirmasi Hapus</h3>
+                        <span class="modal-close" style="cursor: pointer;">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p>Apakah Anda yakin ingin menghapus nasabah <strong>${nama}</strong>?</p>
+                        <p style="color: #ef4444;"><small>Tindakan ini tidak dapat dibatalkan!</small></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-cancel" id="cancel-delete">Batal</button>
+                        <button class="btn-confirm" id="confirm-delete" style="background: #ef4444;">Ya, Hapus</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmModal);
+            
+            const closeModal = () => confirmModal.remove();
+            confirmModal.querySelector('.modal-close').onclick = closeModal;
+            confirmModal.querySelector('#cancel-delete').onclick = closeModal;
+            confirmModal.querySelector('#confirm-delete').onclick = async () => {
+                await hapusNasabah(id);
+                closeModal();
+            };
+            confirmModal.onclick = (e) => { if (e.target === confirmModal) closeModal(); };
+        }
+        
+        async function hapusNasabah(id) {
+            try {
+                const response = await fetch('/api/administrator/nasabah/hapus/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ no_urut: id })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Nasabah berhasil dihapus!');
+                    await loadAllData();
+                } else {
+                    showToast(result.error || 'Gagal menghapus nasabah', 'error');
+                }
+            } catch (error) {
+                showToast('Gagal menghapus nasabah', 'error');
+            }
+        }
+        
+        async function tambahNasabahLengkap(data) {
+            try {
+                const response = await fetch('/api/administrator/nasabah/tambah-lengkap/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Nasabah berhasil ditambahkan!');
+                    document.getElementById('modal-nasabah').style.display = 'none';
+                    document.getElementById('form-nasabah').reset();
+                    await loadAllData();
+                    return true;
+                } else {
+                    showToast(result.error || 'Gagal menambahkan nasabah', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Gagal menambahkan nasabah', 'error');
+                return false;
+            }
+        }
+        
+        async function loadAllData() {
+            await Promise.all([
+                loadNasabahData(),
+                loadPinjamanData(),
+                loadAllExtraTables(),
+                loadDashboardStats(),
+                loadTipePinjamanStats()  // <-- TAMBAHKAN BARIS INI
+            ]);
+            tambahGlobalSearch();
+        }
+        
+        document.getElementById('btn-tambah-nasabah').onclick = () => {
+            document.getElementById('form-nasabah').reset();
+            document.getElementById('modal-nasabah').style.display = 'flex';
+        };
+        
+        document.getElementById('btn-simpan-nasabah').onclick = async () => {
+            const data = {
+                nik: document.getElementById('nik').value,
+                nama_lengkap: document.getElementById('nama_debitur').value,
+                no_telepon: document.getElementById('no_telepon').value,
+                email: document.getElementById('email').value,
+                alamat: document.getElementById('alamat').value,
+                tanggal_lahir: document.getElementById('tanggal_lahir').value,
+                password: document.getElementById('password').value,
+                tanggal_pinjaman: document.getElementById('tanggal_pinjaman').value || null,
+                tanggal_pelunasan: document.getElementById('tanggal_pelunasan').value || null,
+                tipe_pinjaman: document.getElementById('tipe_pinjaman').value,
+                bunga: document.getElementById('bunga').value,
+                no_skk: document.getElementById('no_skk').value,
+                tanggal_skk: document.getElementById('tanggal_skk').value || null,
+                no_pk_perjanjian: document.getElementById('no_pk_perjanjian').value,
+                tanggal_pk: document.getElementById('tanggal_pk').value || null,
+                jumlah_pinjaman: document.getElementById('jumlah_pinjaman').value,
+                tenor: document.getElementById('tenor').value,
+                cicilan_perbulan: document.getElementById('cicilan_perbulan').value,
+                sisa_pinjaman: document.getElementById('jumlah_pinjaman').value,
+                status: 'BELUM AKTIF',
+                jaminan: document.getElementById('jaminan').value,
+                no_agunan: document.getElementById('no_agunan').value,
+                tgl_agunan: document.getElementById('tgl_agunan').value || null,
+                nama_pemilik_agunan: document.getElementById('nama_pemilik_agunan').value,
+                jenis_pengikat: document.getElementById('jenis_pengikat').value,
+                no_ht: document.getElementById('no_ht').value,
+                tgl_ht: document.getElementById('tgl_ht').value || null,
+                no_asuransi: document.getElementById('no_asuransi').value,
+                asuransi: document.getElementById('asuransi').value,
+                kluise_1: document.getElementById('kluise_1').value,
+                kluise_2: document.getElementById('kluise_2').value,
+                lemari_file: document.getElementById('lemari_file').value,
+                no_file: document.getElementById('no_file').value,
+                keterangan: document.getElementById('keterangan').value
+            };
+            
+            if (!data.nik || !data.nama_lengkap || !data.password) {
+                showToast('NIK, Nama Lengkap, dan Password wajib diisi!', 'error');
+                return;
+            }
+            
+            // Jika sedang update (ada currentUpdateId)
+            if (currentUpdateId) {
+                await updateNasabah(currentUpdateId, data);
+            } else {
+                await tambahNasabahLengkap(data);
+            }
+        };
+        
+        const sidebar = document.getElementById('sidebar');
+        const btnToggle = document.getElementById('btn-toggle');
+        const menuItems = document.querySelectorAll('.sidebar .menu-item');
+        const logoutBtn = document.querySelector('.sidebar .menu-item.logout');
+        
+        if (btnToggle) btnToggle.onclick = () => sidebar.classList.toggle('collapsed');
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            const activePage = document.getElementById(pageId + '-content');
+            if (activePage) activePage.classList.add('active');
+        }
+        
+        menuItems.forEach(item => {
+            if (!item.classList.contains('logout')) {
+                item.onclick = function() {
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    showPage(this.getAttribute('data-target'));
+                };
+            }
+        });
+        
+        if (logoutBtn) {
+            logoutBtn.onclick = (e) => { 
+                e.preventDefault(); 
+                window.location.href = "/administrator/login/"; 
+            };
+        }
+        
+        function closeModals() {
+            const modals = ['modal-nasabah', 'modal-ubah-role'];
+            modals.forEach(id => {
+                const modal = document.getElementById(id);
+                if (modal) modal.style.display = 'none';
+            });
+            // Reset form dan judul modal
+            document.getElementById('form-nasabah').reset();
+            const modalHeader = document.querySelector('#modal-nasabah .modal-header h3');
+            const simpanBtn = document.getElementById('btn-simpan-nasabah');
+            if (modalHeader && modalHeader.innerHTML.includes('Update')) {
+                modalHeader.innerHTML = '<i class="fas fa-user-plus"></i> Tambah Nasabah Lengkap';
+            }
+            if (simpanBtn && simpanBtn.innerText !== 'Simpan') {
+                simpanBtn.innerText = 'Simpan';
+            }
+            currentUpdateId = null;
+        }
+        
+        document.querySelectorAll('.modal-close, .btn-cancel').forEach(btn => {
+            if (btn) btn.onclick = closeModals;
+        });
+        
+        window.onclick = (e) => { 
+            if(e.target.classList.contains('modal')) e.target.style.display = 'none'; 
+        };
+        
+        function updateTableHeader() {
+            const thead = document.querySelector('#nasabah-content .card:first-child .data-table thead tr');
+            if (thead && !thead.querySelector('th:last-child')?.innerText.includes('Aksi')) {
+                thead.insertAdjacentHTML('beforeend', '<th>Aksi</th>');
+            }
+        }
+        setTimeout(updateTableHeader, 500);
+        
+        loadAllData();
+
+
+
+
+
+
+        // Deklarasikan variabel chart lingkaran
+let tipePinjamanChart = null;
+
+// Fungsi untuk mendapatkan data tipe pinjaman dari database
+async function loadTipePinjamanStats() {
+    try {
+        const response = await fetch('/api/administrator/tipe-pinjaman-stats/');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            renderPieChart(result.data);
+            renderTipeStats(result.data);
+        }
+    } catch (error) {
+        console.error('Error loading tipe pinjaman stats:', error);
+        // Fallback: ambil dari data yang sudah ada di semuaDataGlobal
+        if (semuaDataGlobal.pinjaman && semuaDataGlobal.pinjaman.length > 0) {
+            const stats = hitungTipePinjamanDariData(semuaDataGlobal.pinjaman);
+            renderPieChart(stats);
+            renderTipeStats(stats);
+        }
+    }
+}
+
+// Fungsi untuk menghitung tipe pinjaman dari data yang sudah ada (fallback)
+function hitungTipePinjamanDariData(pinjamanData) {
+    const stats = {
+        KUR: 0,
+        KPR: 0,
+        KTA: 0,
+        Lainnya: 0
+    };
+    
+    pinjamanData.forEach(p => {
+        const tipe = p.tipe_pinjaman || '';
+        if (tipe === 'KUR') stats.KUR++;
+        else if (tipe === 'KPR') stats.KPR++;
+        else if (tipe === 'KTA') stats.KTA++;
+        else if (tipe) stats.Lainnya++;
+        else stats.Lainnya++;
+    });
+    
+    return {
+        labels: Object.keys(stats).filter(k => stats[k] > 0),
+        data: Object.values(stats).filter(v => v > 0),
+        counts: stats
+    };
+}
+
+// Fungsi untuk render diagram lingkaran
+function renderPieChart(data) {
+    const ctx = document.getElementById('tipePinjamanChart');
+    if (!ctx) return;
+    
+    // Warna untuk setiap tipe
+    const colors = {
+        KUR: '#f37021',
+        KPR: '#3498db',
+        KTA: '#2ecc71',
+        Lainnya: '#95a5a6'
+    };
+    
+    const backgroundColors = data.labels.map(label => colors[label] || '#95a5a6');
+    
+    if (tipePinjamanChart) {
+        tipePinjamanChart.destroy();
+    }
+    
+    tipePinjamanChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.data,
+                backgroundColor: backgroundColors,
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12, family: "'Inter', sans-serif" },
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${label}: ${value} nasabah (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Fungsi untuk menampilkan statistik tambahan
+function renderTipeStats(data) {
+    const statsContainer = document.getElementById('tipe-pinjaman-stats');
+    if (!statsContainer) return;
+    
+    const total = data.data.reduce((a, b) => a + b, 0);
+    
+    const statsHtml = data.labels.map((label, index) => {
+        const count = data.data[index];
+        const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+        const colors = {
+            KUR: '#f37021',
+            KPR: '#3498db',
+            KTA: '#2ecc71',
+            Lainnya: '#95a5a6'
+        };
+        const color = colors[label] || '#95a5a6';
+        
+        return `
+            <div style="text-align: center; min-width: 80px;">
+                <div style="font-size: 24px; font-weight: bold; color: ${color};">${count}</div>
+                <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">${label}</div>
+                <div style="font-size: 12px; font-weight: 600;">${percentage}%</div>
+            </div>
+        `;
+    }).join('');
+    
+    statsContainer.innerHTML = `
+        <div style="background: #f8fafc; padding: 12px 24px; border-radius: 12px; display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;">
+            ${statsHtml}
+            <div style="border-left: 1px solid #e2e8f0; padding-left: 20px;">
+                <div style="font-size: 24px; font-weight: bold; color: #1e293b;">${total}</div>
+                <div style="font-size: 11px; color: #64748b;">Total Nasabah</div>
+            </div>
+        </div>
+    `;
+}
+
+
+
+
+
+
+
+
+// Variabel untuk menyimpan data nasabah yang akan di-set limit
+let selectedNasabahForLimit = null;
+
+// Fungsi show modal set limit
+function showSetLimitModal(id, nama, currentLimit) {
+    selectedNasabahForLimit = {
+        id: id,
+        nama: nama
+    };
+    
+    // Buat modal jika belum ada
+    let modal = document.getElementById('modal-set-limit');
+    if (!modal) {
+        const modalHtml = `
+            <div id="modal-set-limit" class="modal">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <h3><i class="fas fa-chart-line"></i> Set Limit Pinjaman</h3>
+                        <span class="modal-close" data-modal="set-limit">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p>Nasabah: <strong id="limit-nasabah-nama"></strong></p>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>Limit Pinjaman (Rp)</label>
+                            <input type="number" id="limit-pinjaman-value" class="form-input" placeholder="Masukkan nominal limit">
+                        </div>
+                        <div class="info-box" style="margin-top: 10px; padding: 8px; background: #f0f9ff; border-radius: 8px;">
+                            <small><i class="fas fa-info-circle"></i> Limit adalah plafon maksimal yang bisa dipinjam nasabah</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-cancel" data-modal="set-limit">Batal</button>
+                        <button class="btn-confirm" id="btn-simpan-limit" style="background: #3b82f6;">Simpan Limit</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Event listener untuk close modal
+        document.querySelectorAll('#modal-set-limit .modal-close, #modal-set-limit .btn-cancel').forEach(btn => {
+            btn.onclick = () => document.getElementById('modal-set-limit').style.display = 'none';
+        });
+        
+        // Event listener untuk tombol simpan
+        document.getElementById('btn-simpan-limit').onclick = saveLimitPinjaman;
+    }
+    
+    document.getElementById('limit-nasabah-nama').innerText = nama;
+    document.getElementById('limit-pinjaman-value').value = currentLimit;
+    document.getElementById('modal-set-limit').style.display = 'flex';
+}
+
+// Fungsi simpan limit ke server
+async function saveLimitPinjaman() {
+    if (!selectedNasabahForLimit) return;
+    
+    const limitBaru = document.getElementById('limit-pinjaman-value').value;
+    
+    if (!limitBaru || limitBaru < 0) {
+        showToast('Masukkan limit yang valid!', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/administrator/nasabah/update-limit/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                no_urut: selectedNasabahForLimit.id,
+                limit_pinjaman: parseInt(limitBaru)
+            })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message);
+            document.getElementById('modal-set-limit').style.display = 'none';
+            await loadAllData(); // Refresh data
+        } else {
+            showToast(result.error, 'error');
+        }
+    } catch (error) {
+        showToast('Gagal menyimpan limit', 'error');
+    }
+}
+    </script>
+</body>
+</html>
