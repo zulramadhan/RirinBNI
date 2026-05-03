@@ -2,18 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "ririnBNI/BNI_ririn/wsgi.py",
+      "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
-        "runtime": "python3.10"
+        "runtime": "python3.12"
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "ririnBNI/BNI_ririn/wsgi.py"
+      "dest": "api/index.py"
     }
   ]
 }
