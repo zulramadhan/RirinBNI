@@ -3,14 +3,18 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.12"
-      }
+      "use": "@vercel/python"
+    },
+    {
+      "src": "api/migrate.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
+    {
+      "src": "/migrate",
+      "dest": "api/migrate.py"
+    },
     {
       "src": "/(.*)",
       "dest": "api/index.py"
