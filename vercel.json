@@ -4,21 +4,12 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "api/migrate.py",
-      "use": "@vercel/python"
     }
   ],
   "routes": [
-    {
-      "src": "/migrate",
-      "dest": "api/migrate.py"
-    },
     {
       "src": "/(.*)",
       "dest": "api/index.py"
     }
   ]
 }
-
